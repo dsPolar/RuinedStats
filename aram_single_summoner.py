@@ -1,7 +1,7 @@
 from riotwatcher import LolWatcher, ApiError
 import pandas as pd
 import numpy as np
-import time
+
 from api_key import key
 
 
@@ -126,4 +126,4 @@ if __name__ == "__main__":
     #for begin_index in range(1400,1500,100):
     #    get_hundred_matches(region, user, queue_id, lol_watcher, begin_index=begin_index)
 
-    concat_aram_game_info_frames("csv/aram_games_begin_")
+    #concat_aram_game_info_frames("csv/aram_games_begin_")
