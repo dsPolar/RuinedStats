@@ -5,11 +5,28 @@ import time
 from api_key import key
 
 
+# Make a request to matchv4 api through riot watcher
+# Make several attempts to achieve result in case of timeouts
+def game_info_request(region, game_id, lol_watcher, num_retries=3):
+    for num_attempt in range(num_retries):
+        try:
+            game_info = lol_watcher.match.by_id(region, game_id)
+            return game_info
+        except ApiError as err:
+            if err.response.status_code == 400:
+                print("Bad Request")
+                raise
+            elif num_attempt < (num_retries - 1):
+                print("Failed to receive response")
+                print(str(err.response.status_code))
+            else:
+                raise
 
-
-def get_last_hundred_matches(region, user, queue_id, lol_watcher):
+# Get up to 100 matches in queue for user
+# Defaults to recency but begin_index can be used to navigate further back
+def get_hundred_matches(region, user, queue_id, lol_watcher, begin_index=0):
     try:
-        last_hundred_aram = lol_watcher.match.matchlist_by_account(region, user['accountId'], queue=queue_id, begin_index=0, end_index=100)
+        last_hundred_aram = lol_watcher.match.matchlist_by_account(region, user['accountId'], queue=queue_id, begin_index=begin_index)
     except ApiError as err:
         raise
 
@@ -21,7 +38,7 @@ def get_last_hundred_matches(region, user, queue_id, lol_watcher):
 
     for row in summoner_game_frame.itertuples(index=False, name="Games"):
         try:
-            game = lol_watcher.match.by_id(region, row.gameId)
+            game = game_info_request(region, row.gameId, lol_watcher)
 
             game_dict['matches'].append(game)
         except ApiError as err:
@@ -30,7 +47,8 @@ def get_last_hundred_matches(region, user, queue_id, lol_watcher):
     # Dataframe containing MatchDto objects
     game_frame = pd.DataFrame.from_dict(game_dict['matches'])
 
-    game_frame.to_csv("csv/my_aram_games.csv")
+    game_frame.to_csv("csv/aram_games_begin_" + str(begin_index) + ".csv")
+    return game_frame
 
 def get_all_arams(region, user, lol_watcher):
     begin_index = 0
@@ -59,6 +77,35 @@ def get_all_arams(region, user, lol_watcher):
     all_aram_frame = all_aram_frame.drop(['platformId', 'queue', 'timestamp'], axis=1)
 
     all_aram_frame.to_csv("csv/all_aram_games.csv")
+    return all_aram_frame
+
+def load_arams():
+    df = pd.read_csv("csv/all_aram_games.csv")
+    return df
+
+def concat_aram_game_info_frames(path):
+    frames = []
+    for x in range(0,1500,100):
+        frames.append(pd.read_csv(path + str(x) + ".csv"))
+    total_frame = pd.concat(frames)
+    total_frame.to_csv(path + "all.csv")
+    return total_frame
+
+def get_full_game_info_for_frame(match_frame, region, lol_watcher):
+
+    game_dict = {'matches':[]}
+
+    for row in match_frame.itertuples(index=False, name='Games'):
+        try:
+            game = lol_watcher.match.by_id(region, row.gameId)
+            game_dict['matches'].append(game)
+        except ApiError as err:
+            raise
+
+    full_game_frame = pd.DataFrame.from_dict(game_dict['matches'])
+
+    full_game_frame.to_csv("csv/all_aram_full_game_info.csv")
+    return full_game_frame
 
 
 
@@ -71,4 +118,12 @@ if __name__ == "__main__":
 
     user = lol_watcher.summoner.by_name(region, "CatgirlViegoGF")
 
-    get_all_arams(region, user, lol_watcher)
+    #get_all_arams(region, user, lol_watcher)
+
+    #match_frame = load_arams()
+    #full_game_frame = get_full_game_info_for_frame(match_frame, region, lol_watcher)
+
+    #for begin_index in range(1400,1500,100):
+    #    get_hundred_matches(region, user, queue_id, lol_watcher, begin_index=begin_index)
+
+    concat_aram_game_info_frames("csv/aram_games_begin_")
