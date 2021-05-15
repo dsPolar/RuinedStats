@@ -14,10 +14,7 @@ summoner_name = sys.argv[1]
 def get_player_by_summoner_name(summoner_name):
     lol_watcher = LolWatcher(ruined_stats.config.key)
 
-    region = "euw1"
-    queue_id = "450"
-
-    user = lol_watcher.summoner.by_name(region, summoner_name)
+    user = lol_watcher.summoner.by_name(ruined_stats.config.region, summoner_name)
     return user
 
 
@@ -26,7 +23,16 @@ def save_player_by_summoner_name(summoner_name):
     player = get_player_by_summoner_name(summoner_name)
     persister.create_player(session, player)
 
+def get_match_info_by_id(match_id):
+    lol_watcher = LolWatcher(ruined_stats.config.key)
+    match_info = lol_watcher.match.by_id(ruined_stats.config.region, match_id)
+    ...
+    return match, teams, players
 
+def save_match_info_by_id(match_id):
+    session = Session()
+    match, teams, players = get_match_info_by_id(match_id)
+    persister.create_match(session, match, teams, players)
 
 
 
