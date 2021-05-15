@@ -5,6 +5,7 @@ import numpy as np
 from api_key import key
 
 
+
 # Make a request to matchv4 api through riot watcher
 # Make several attempts to achieve result in case of timeouts
 def game_info_request(region, game_id, lol_watcher, num_retries=3):
@@ -117,7 +118,7 @@ if __name__ == "__main__":
     queue_id = "450"
 
     user = lol_watcher.summoner.by_name(region, "CatgirlViegoGF")
-
+    print(user)
     #get_all_arams(region, user, lol_watcher)
 
     #match_frame = load_arams()

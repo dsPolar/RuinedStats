@@ -1,9 +1,13 @@
-from sqlalchemy import create_engine
+import enum
+
+from sqlalchemy import create_engine, ForeignKey, Enum, Boolean
 from sqlalchemy import Column, Integer, String
-import pathlib
-from sqlalchemy.orm import declarative_base
+
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, sessionmaker
 
 Base = declarative_base()
+
 
 class TeamID(enum.Enum):
     BLUE = "100"
@@ -19,6 +23,8 @@ class Player(Base):
     current_account_id = Column(String, unique=True)
     summoner_id = Column(String, unique=True)
 
+    scraped = Column(Boolean, default=False)
+
     participants = relationship("Participant")
 
 
@@ -33,6 +39,7 @@ class Participant(Base):
 
     team_stats_id = Column(Integer, ForeignKey("teamstats.team_stats_id"))
 
+
 class TeamStats(Base):
     __tablename__ = 'teamstats'
     team_stats_id = Column(Integer, primary_key=True)
@@ -45,7 +52,7 @@ class TeamStats(Base):
 
     win = Column(Boolean)
 
-    team_id = Column(EnumField(TeamID))
+    team_id = Column(Enum(TeamID))
 
 
 class Match(Base):
@@ -56,6 +63,7 @@ class Match(Base):
     teams = relationship("TeamStats")
 
 
-
-
 engine = create_engine('sqlite:///ruined_stats.db')
+Base.metadata.create_all(engine)
+
+Session = sessionmaker(bind=engine)

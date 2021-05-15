@@ -1,4 +1,5 @@
 api_key.py
+config
 *.csv
 data_dragon/*
 .idea/
