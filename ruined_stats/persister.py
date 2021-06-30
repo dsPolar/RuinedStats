@@ -22,8 +22,32 @@ def get_or_create(session, model, defaults=None, **kwargs):
             return instance, True
 
 
-def create_match(session, match, teams, players):
-    ...
+def create_match(session, match_id, teams, players):
+    # Get the instance we just created to use the primary key
+    match = get_or_create(session, models.Match, defaults=dict(
+        match_id=match_id
+    ))
+
+    team_objects = []
+    for i, team in enumerate(teams):
+        if team["win"] == "Win":
+            win = True
+        else:
+            win = False
+
+        team_objects[i] = get_or_create(session, models.TeamStats, defaults=dict(
+            # Trying to get primary key of Match object we just created
+            match_id=match.match_id,
+            first_blood=teams[i]["firstBlood"],
+            first_tower=teams[i]["firstTower"],
+            first_inhib=teams[i]["firstInhib"],
+            win=win,
+            team_id=teams[i]["teamId"]
+        ))
+
+    for i, player in enumerate(players):
+        ...
+
 
 
 def create_player(session, player):

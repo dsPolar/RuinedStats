@@ -1,5 +1,4 @@
 
-
 import sys
 
 from riotwatcher import LolWatcher
@@ -26,8 +25,9 @@ def save_player_by_summoner_name(summoner_name):
 def get_match_info_by_id(match_id):
     lol_watcher = LolWatcher(ruined_stats.config.key)
     match_info = lol_watcher.match.by_id(ruined_stats.config.region, match_id)
-    ...
-    return match, teams, players
+    teams = match_info["teams"]
+    players = match_info["participants"]
+    return match_id, teams, players
 
 def save_match_info_by_id(match_id):
     session = Session()
