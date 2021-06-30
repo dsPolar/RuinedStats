@@ -20,7 +20,7 @@ def get_player_by_summoner_name(summoner_name):
 def save_player_by_summoner_name(summoner_name):
     session = Session()
     player = get_player_by_summoner_name(summoner_name)
-    persister.create_player(session, player)
+    persister.get_or_create_player(session, player)
 
 def get_match_info_by_id(match_id):
     lol_watcher = LolWatcher(ruined_stats.config.key)

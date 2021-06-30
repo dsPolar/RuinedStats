@@ -22,38 +22,47 @@ def get_or_create(session, model, defaults=None, **kwargs):
             return instance, True
 
 
-def create_match(session, match_id, teams, players):
+def create_match(session, match_id, teams, participants):
     # Get the instance we just created to use the primary key
     match = get_or_create(session, models.Match, defaults=dict(
         match_id=match_id
     ))
 
     team_objects = []
+    team_id_relater = dict()
     for i, team in enumerate(teams):
         if team["win"] == "Win":
             win = True
         else:
             win = False
 
+        # Save the relation between list position and the teamId
+        # Not assuming that it is always in logical order of 100,200
+        team_id_relater.update([str(i),team["teamId"]])
+
         team_objects[i] = get_or_create(session, models.TeamStats, defaults=dict(
             # Trying to get primary key of Match object we just created
             match_id=match.match_id,
-            first_blood=teams[i]["firstBlood"],
-            first_tower=teams[i]["firstTower"],
-            first_inhib=teams[i]["firstInhib"],
+            first_blood=team["firstBlood"],
+            first_tower=team["firstTower"],
+            first_inhib=team["firstInhib"],
             win=win,
-            team_id=teams[i]["teamId"]
+            team_id=team["teamId"]
         ))
 
-    for i, player in enumerate(players):
+    player_objects = []
+    for i, participant in enumerate(participants):
+        # Check summonerId against database and get or create object
+        # Keep objects to have id to link to
         ...
 
 
 
-def create_player(session, player):
+def get_or_create_player(session, player):
 
-    get_or_create(session, models.Player, defaults=dict(
+    player_object = get_or_create(session, models.Player, defaults=dict(
         account_id=player["accountId"],
         current_account_id=player["accountId"]
     ),
         summoner_id=player["id"])
+    return player_object
