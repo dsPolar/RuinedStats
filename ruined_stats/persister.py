@@ -23,44 +23,61 @@ def get_or_create(session, model, defaults=None, **kwargs):
 
 
 def create_match(session, match_id, teams, participants, participant_identities):
-    # Get the instance we just created to use the primary key
-    match = get_or_create(session, models.Match, defaults=dict(), match_id=match_id)
+    # Should check if match exists already
+    # Skip process if it does
+    match_check = session.query(models.Match).filter_by(match_id=match_id).one_or_none()
+    if not match_check:
+        match = get_or_create(session, models.Match, defaults=dict(), match_id=match_id)
 
-    team_objects = []
-    team_id_relater = dict()
-    for i, team in enumerate(teams):
-        if team["win"] == "Win":
-            win = True
-        else:
-            win = False
+        # Now need to get team stats info
+        team_stats_objects = [dict()]
 
-        # Save the relation between list position and the teamId
-        # Not assuming that it is always in logical order of 100,200
-        team_id_relater.update([str(i),team["teamId"]])
+        def map_win_to_bool(win_string):
+            if win_string == "Win":
+                return True
+            else:
+                return False
 
-        team_objects[i] = get_or_create(session, models.TeamStats, defaults=dict(
-            first_blood=team["firstBlood"],
-            first_tower=team["firstTower"],
-            first_inhib=team["firstInhib"],
-            win=win,
-            team_id=team["teamId"]
-        ),
-            # Trying to get primary key of Match object we just created
-            match_id=match.match_id)
+        assert len(teams) == 2
+        for i, team in enumerate(teams):
+            team_stats_objects[i]["team_id"] = team["teamId"]
+            team_stats_objects[i]["first_blood"] = team["firstBlood"]
+            team_stats_objects[i]["first_tower"] = team["firstTower"]
+            team_stats_objects[i]["first_inhib"] = team["firstInhib"]
+            team_stats_objects[i]["win"] = map_win_to_bool(team["win"])
 
-    player_objects = [dict()]
-    assert len(participants) == len(participant_identities)
+            team_stats_objects[i]["object"] = get_or_create(session, models.TeamStats, defaults=dict(
+                first_blood=team_stats_objects[i]["firstBlood"],
+                first_tower=team_stats_objects[i]["firstTower"],
+                first_inhib=team_stats_objects[i]["firstInhib"],
+                win=team_stats_objects[i]
+            ),
+                match_id=match.match_id,
+                team_id=team_stats_objects[i]["team_id"])
 
-    for i in range(len(participant_identities)):
-        # Check summonerId against database and get or create object
-        # Keep objects to have id to link to
-        player_objects[i]["object"] = get_or_create_player(session,
-                                                           participant_identities[i]["player"]["summonerId"])
-        player_objects[i]["game_id"] = participant_identities[i]["participantId"]
-        # Find the list element with id we want, and get the champion_id from that
-        player_objects[i]["champion_id"] = \
-            (item for item in participants if item["participantId"] == player_objects[i]["game_id"])["championId"]
+        # Now need to get the player information
+        player_objects = [dict()]
+        assert len(participants) == len(participant_identities)
 
+        for i in range(len(participant_identities)):
+            # Check summonerId against database and get or create object
+            # Keep objects to have id to link to
+            player_objects[i]["object"] = get_or_create_player(session,
+                                                               participant_identities[i]["player"]["summonerId"])
+            player_objects[i]["team_participant_id"] = participant_identities[i]["participantId"]
+            player_objects[i]["team_id"] = \
+                (item for item in participants if item["participantId"] == player_objects[i]["team_participant_id"])["teamId"]
+            # Find the list element with id we want, and get the champion_id from that
+            player_objects[i]["champion_id"] = \
+                (item for item in participants if item["participantId"] == player_objects[i]["team_participant_id"])["championId"]
+
+            player_objects[i]["participant_object"] = get_or_create(session, models.Participant, defaults=dict(
+                team_participant_id=player_objects[i]["team_participant_id"],
+                champion_id=player_objects[i]["champion_id"]
+            ),
+                player_id=player_objects[i]["object"].player_id,
+                team_stats_id=(item for item in team_stats_objects if item["team_id"] == player_objects[i]["team_id"])["object"].team_stats_id
+            )
 
 def get_or_create_player(session, summoner_id):
     player_object = get_or_create(session, models.Player, defaults=dict(), summoner_id=summoner_id)
