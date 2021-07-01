@@ -22,11 +22,9 @@ def get_or_create(session, model, defaults=None, **kwargs):
             return instance, True
 
 
-def create_match(session, match_id, teams, participants):
+def create_match(session, match_id, teams, participants, participant_identities):
     # Get the instance we just created to use the primary key
-    match = get_or_create(session, models.Match, defaults=dict(
-        match_id=match_id
-    ))
+    match = get_or_create(session, models.Match, defaults=dict(), match_id=match_id)
 
     team_objects = []
     team_id_relater = dict()
@@ -41,28 +39,29 @@ def create_match(session, match_id, teams, participants):
         team_id_relater.update([str(i),team["teamId"]])
 
         team_objects[i] = get_or_create(session, models.TeamStats, defaults=dict(
-            # Trying to get primary key of Match object we just created
-            match_id=match.match_id,
             first_blood=team["firstBlood"],
             first_tower=team["firstTower"],
             first_inhib=team["firstInhib"],
             win=win,
             team_id=team["teamId"]
-        ))
+        ),
+            # Trying to get primary key of Match object we just created
+            match_id=match.match_id)
 
-    player_objects = []
-    for i, participant in enumerate(participants):
+    player_objects = [dict()]
+    assert len(participants) == len(participant_identities)
+
+    for i in range(len(participant_identities)):
         # Check summonerId against database and get or create object
         # Keep objects to have id to link to
-        ...
+        player_objects[i]["object"] = get_or_create_player(session,
+                                                           participant_identities[i]["player"]["summonerId"])
+        player_objects[i]["game_id"] = participant_identities[i]["participantId"]
+        # Find the list element with id we want, and get the champion_id from that
+        player_objects[i]["champion_id"] = \
+            (item for item in participants if item["participantId"] == player_objects[i]["game_id"])["championId"]
 
 
-
-def get_or_create_player(session, player):
-
-    player_object = get_or_create(session, models.Player, defaults=dict(
-        account_id=player["accountId"],
-        current_account_id=player["accountId"]
-    ),
-        summoner_id=player["id"])
+def get_or_create_player(session, summoner_id):
+    player_object = get_or_create(session, models.Player, defaults=dict(), summoner_id=summoner_id)
     return player_object
