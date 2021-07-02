@@ -35,7 +35,8 @@ def save_match_info_by_id(match_id):
     match, teams, participants, participant_identities = get_match_info_by_id(match_id)
     persister.create_match(session, match, teams, participants, participant_identities)
 
-def get_matchlist_by_summoner_id()
+def get_matchlist_by_summoner_id():
+    ...
 
 
 player = save_player_by_summoner_name(summoner_name)
