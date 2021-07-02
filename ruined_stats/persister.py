@@ -85,3 +85,8 @@ def get_or_create_player(session, player):
     ), summoner_id=player["id"],
        puuid=player["puuid"])
     return player_object
+
+def update_player_scraped(sql_player, new_scraped):
+    session = Session()
+    sql_player.scraped = new_scraped
+    session.commit()

@@ -5,6 +5,7 @@ from sqlalchemy import Column, Integer, String
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm.exc import NoResultFound
 
 Base = declarative_base()
 
@@ -60,6 +61,16 @@ class Match(Base):
     riot_match_id = Column(String, unique=True)
 
     teams = relationship("TeamStats")
+
+
+def get_unscraped_player():
+    session = Session()
+    try:
+        sql_player = session.query().filter(Player.scraped == False).one()
+    except NoResultFound as e:
+        sql_player = None
+        print(e)
+    return sql_player
 
 
 engine = create_engine('sqlite:///ruined_stats.db')
