@@ -1,6 +1,6 @@
 import sys
 
-from riotwatcher import LolWatcher
+from riotwatcher import LolWatcher, ApiError
 
 import ruined_stats.config
 from ruined_stats import persister
@@ -26,10 +26,18 @@ def save_player_by_summoner_name(summoner_name):
 
 def get_match_info_by_id(match_id):
     lol_watcher = LolWatcher(ruined_stats.config.key)
-    match_info = lol_watcher.match.by_id(ruined_stats.config.region, match_id)
-    teams = match_info["teams"]
-    participants = match_info["participants"]
-    participant_identities = match_info["participantIdentities"]
+    for attempt in range(ruined_stats.config.number_of_retries):
+        try:
+            match_info = lol_watcher.match.by_id(ruined_stats.config.region, match_id)
+            teams = match_info["teams"]
+            participants = match_info["participants"]
+            participant_identities = match_info["participantIdentities"]
+        except ApiError as err:
+            if attempt < (ruined_stats.config.number_of_retries - 1):
+                print(err)
+                print("ApiError within retry count. Retrying...")
+            else:
+                raise
     return match_id, teams, participants, participant_identities
 
 
