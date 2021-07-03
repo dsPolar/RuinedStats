@@ -1,3 +1,5 @@
+import sys
+
 from sqlalchemy.sql import ClauseElement
 
 import models
@@ -28,7 +30,9 @@ def create_match(session, match_id, teams, participants, participant_identities)
     match_check = session.query(models.Match).filter_by(match_id=match_id).one_or_none()
     if not match_check:
         match = get_or_create(session, models.Match, defaults=dict(), match_id=match_id)
-
+        print(match)
+        sys.exit()
+        print("Created Match")
         # Now need to get team stats info
         team_stats_objects = [dict()]
 
@@ -43,17 +47,18 @@ def create_match(session, match_id, teams, participants, participant_identities)
             team_stats_objects[i]["team_id"] = team["teamId"]
             team_stats_objects[i]["first_blood"] = team["firstBlood"]
             team_stats_objects[i]["first_tower"] = team["firstTower"]
-            team_stats_objects[i]["first_inhib"] = team["firstInhib"]
+            team_stats_objects[i]["first_inhib"] = team["firstInhibitor"]
             team_stats_objects[i]["win"] = map_win_to_bool(team["win"])
 
             team_stats_objects[i]["object"] = get_or_create(session, models.TeamStats, defaults=dict(
-                first_blood=team_stats_objects[i]["firstBlood"],
-                first_tower=team_stats_objects[i]["firstTower"],
-                first_inhib=team_stats_objects[i]["firstInhib"],
+                first_blood=team_stats_objects[i]["first_blood"],
+                first_tower=team_stats_objects[i]["first_tower"],
+                first_inhib=team_stats_objects[i]["first_inhib"],
                 win=team_stats_objects[i]
             ),
-                match_id=match.match_id,
+                match_id=match["match_id"],
                 team_id=team_stats_objects[i]["team_id"])
+            print("Created TeamStats object")
 
         # Now need to get the player information
         player_objects = [dict()]
@@ -78,6 +83,7 @@ def create_match(session, match_id, teams, participants, participant_identities)
                 player_id=player_objects[i]["object"].player_id,
                 team_stats_id=(item for item in team_stats_objects if item["team_id"] == player_objects[i]["team_id"])["object"].team_stats_id
             )
+            print("Created participant object")
 
 def get_or_create_player(session, player):
     player_object = get_or_create(session, models.Player, defaults=dict(
