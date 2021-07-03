@@ -86,6 +86,7 @@ def scraping_procedure(number_of_users_to_scrape):
                 session = Session()
                 summoner = get_player_by_summoner_name(config.bootstrap_summoner_name)
                 sql_player = persister.get_or_create_player(session, summoner)
+                scrape_player(sql_player)
             else:
                 raise RuntimeError("No unscraped players in database after bootstrap scraped")
 

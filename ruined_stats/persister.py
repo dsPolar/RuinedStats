@@ -24,14 +24,12 @@ def get_or_create(session, model, defaults=None, **kwargs):
             return instance, True
 
 
-def create_match(session, match_id, teams, participants, participant_identities):
+def create_match(session, riot_match_id, teams, participants, participant_identities):
     # Should check if match exists already
     # Skip process if it does
-    match_check = session.query(models.Match).filter_by(match_id=match_id).one_or_none()
+    match_check = session.query(models.Match).filter_by(riot_match_id=riot_match_id).one_or_none()
     if not match_check:
-        match = get_or_create(session, models.Match, defaults=dict(), match_id=match_id)
-        print(match)
-        sys.exit()
+        match = get_or_create(session, models.Match, defaults=dict(), riot_match_id=riot_match_id)
         print("Created Match")
         # Now need to get team stats info
         team_stats_objects = [dict()]
@@ -56,7 +54,7 @@ def create_match(session, match_id, teams, participants, participant_identities)
                 first_inhib=team_stats_objects[i]["first_inhib"],
                 win=team_stats_objects[i]
             ),
-                match_id=match["match_id"],
+                match_id=match[0].match_id,
                 team_id=team_stats_objects[i]["team_id"])
             print("Created TeamStats object")
 
