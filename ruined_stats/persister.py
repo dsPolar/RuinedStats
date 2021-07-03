@@ -1,6 +1,6 @@
 from sqlalchemy.sql import ClauseElement
 
-from ruined_stats import models
+import models
 
 
 def get_or_create(session, model, defaults=None, **kwargs):

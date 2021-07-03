@@ -2,19 +2,18 @@ import sys
 
 from riotwatcher import LolWatcher, ApiError
 
-import ruined_stats.config
-from ruined_stats import persister
-from ruined_stats.models import Session
-from ruined_stats.models import get_unscraped_player
+import config
+import persister
+from models import Session, get_unscraped_player
 
 #summoner_name = sys.argv[1]
-scrape_count = sys.argv[1]
+scrape_count = int(sys.argv[1])
 
 
 def get_player_by_summoner_name(summoner_name):
-    lol_watcher = LolWatcher(ruined_stats.config.key)
+    lol_watcher = LolWatcher(config.key)
 
-    user = lol_watcher.summoner.by_name(ruined_stats.config.region, summoner_name)
+    user = lol_watcher.summoner.by_name(config.region, summoner_name)
     return user
 
 
@@ -26,15 +25,15 @@ def save_player_by_summoner_name(summoner_name):
 
 
 def get_match_info_by_id(match_id):
-    lol_watcher = LolWatcher(ruined_stats.config.key)
-    for attempt in range(ruined_stats.config.number_of_retries):
+    lol_watcher = LolWatcher(config.key)
+    for attempt in range(config.number_of_retries):
         try:
-            match_info = lol_watcher.match.by_id(ruined_stats.config.region, match_id)
+            match_info = lol_watcher.match.by_id(config.region, match_id)
             teams = match_info["teams"]
             participants = match_info["participants"]
             participant_identities = match_info["participantIdentities"]
         except ApiError as err:
-            if attempt < (ruined_stats.config.number_of_retries - 1):
+            if attempt < (config.number_of_retries - 1):
                 print(err)
                 print("ApiError within retry count. Retrying...")
             else:
@@ -54,13 +53,13 @@ def save_matchlist(matchlist):
 
 
 def get_and_save_matchlist_by_account_id(sql_player, account_id):
-    lol_watcher = LolWatcher(ruined_stats.config.key)
+    lol_watcher = LolWatcher(config.key)
     # Work out some solution to get id's for all games
     begin_index = 0
     done = False
     while not done:
-        matchlist_response = lol_watcher.match.matchlist_by_account(ruined_stats.config.region, account_id,
-                                                                    queue=ruined_stats.config.queue_id,
+        matchlist_response = lol_watcher.match.matchlist_by_account(config.region, account_id,
+                                                                    queue=config.queue_id,
                                                                     begin_index=begin_index
                                                                     )
         if len(matchlist_response["matches"]) < 100:
@@ -85,7 +84,7 @@ def scraping_procedure(number_of_users_to_scrape):
         else:
             if i == 0:
                 session = Session()
-                summoner = get_player_by_summoner_name(ruined_stats.config.bootstrap_summoner_name)
+                summoner = get_player_by_summoner_name(config.bootstrap_summoner_name)
                 sql_player = persister.get_or_create_player(session, summoner)
             else:
                 raise RuntimeError("No unscraped players in database after bootstrap scraped")

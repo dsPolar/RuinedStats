@@ -66,7 +66,7 @@ class Match(Base):
 def get_unscraped_player():
     session = Session()
     try:
-        sql_player = session.query().filter(Player.scraped == False).one()
+        sql_player = session.query(Player).filter(Player.scraped == False).one()
     except NoResultFound as e:
         sql_player = None
         print(e)
