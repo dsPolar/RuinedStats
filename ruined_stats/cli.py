@@ -7,7 +7,8 @@ from ruined_stats import persister
 from ruined_stats.models import Session
 from ruined_stats.models import get_unscraped_player
 
-summoner_name = sys.argv[1]
+#summoner_name = sys.argv[1]
+scrape_count = sys.argv[1]
 
 
 def get_player_by_summoner_name(summoner_name):
@@ -69,13 +70,28 @@ def get_and_save_matchlist_by_account_id(sql_player, account_id):
         persister.update_player_scraped(sql_player, True)
 
 
-def scrape_unscraped_player():
-    sql_player = get_unscraped_player()
+def scrape_player(sql_player):
     try:
         get_and_save_matchlist_by_account_id(sql_player, sql_player.account_id)
     except Exception as e:
         print(e)
 
 
-player = save_player_by_summoner_name(summoner_name)
-print(player)
+def scraping_procedure(number_of_users_to_scrape):
+    for i in range(number_of_users_to_scrape):
+        sql_player = get_unscraped_player()
+        if sql_player is not None:
+            scrape_player(sql_player)
+        else:
+            if i == 0:
+                session = Session()
+                summoner = get_player_by_summoner_name(ruined_stats.config.bootstrap_summoner_name)
+                sql_player = persister.get_or_create_player(session, summoner)
+            else:
+                raise RuntimeError("No unscraped players in database after bootstrap scraped")
+
+
+try:
+    scraping_procedure(scrape_count)
+except RuntimeError as err:
+    print(err)
