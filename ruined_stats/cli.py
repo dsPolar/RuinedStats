@@ -2,12 +2,16 @@ import sys
 
 from riotwatcher import LolWatcher, ApiError
 
-import config
-import persister
-from models import Session, get_unscraped_player
+from ruined_stats import config
+from ruined_stats import persister
+from ruined_stats.models import Session, get_unscraped_player
+
 
 #summoner_name = sys.argv[1]
-scrape_count = int(sys.argv[1])
+try:
+    scrape_count = int(sys.argv[1])
+except IndexError:
+    scrape_count = 1
 
 
 def get_player_by_summoner_name(summoner_name):

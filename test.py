@@ -30,3 +30,9 @@ class TestRowCreation(unittest.TestCase):
         ),
                                                     match_id=match_object.match_id)
         self.assertIn(team_stats_object, self.session.query(models.TeamStats))
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+

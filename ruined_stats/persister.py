@@ -2,7 +2,7 @@ import sys
 
 from sqlalchemy.sql import ClauseElement
 
-import models
+from ruined_stats import models
 
 
 def get_or_create(session, model, defaults=None, **kwargs):
