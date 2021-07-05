@@ -30,7 +30,7 @@ def create_match(session, riot_match_id, teams, participants, participant_identi
     match_check = session.query(models.Match).filter_by(riot_match_id=riot_match_id).one_or_none()
     if not match_check:
         match = get_or_create(session, models.Match, defaults=dict(), riot_match_id=riot_match_id)
-        print("Created Match")
+        print("Created Match with id " + str(match.match_id))
         # Now need to get team stats info
         team_stats_objects = [dict()]
 

@@ -72,6 +72,16 @@ def get_unscraped_player():
         print(e)
     return sql_player
 
+def get_testing_database_session():
+    test_engine = create_engine('sqlite:///test_stats.db')
+    Base.metadata.create_all(test_engine)
+    Session = sessionmaker(bind=test_engine)
+    session = Session()
+    return session
+
+def testing_tear_down(test_engine):
+    Base.metadata.drop_all(test_engine)
+
 
 engine = create_engine('sqlite:///ruined_stats.db')
 Base.metadata.create_all(engine)
