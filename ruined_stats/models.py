@@ -14,7 +14,6 @@ class TeamID(enum.Enum):
     BLUE = "100"
     RED = "200"
 
-
 class Player(Base):
     __tablename__ = 'player'
 

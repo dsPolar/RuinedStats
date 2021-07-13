@@ -13,6 +13,16 @@ class TestRowCreation(unittest.TestCase):
         player_object = persister.get_or_create_player(self.session, player)
         self.assertIn(player_object, self.session.query(models.Player))
 
+    def test_add_player_object(self):
+        player = models.Player(summoner_id="jiE6NGM_ddgkCi93q2gzhxT6X5ZooJkpN97TmQ7jLkERboQ",
+                               account_id="Y8ahNI3O8mMC_LNYrYykVUG_qbZHm0P18Q5Nq6Nzuv2giA",
+                               puuid="lKTUv_R_ocQqnGOj87fV4XKJjpUjfn0A54CETr-bkFjEUVKuVSOJaX6dPoIrMNEd5Ku3NmmShuQsKQ",
+                               scraped=False)
+
+        player_object = persister.get_or_create_with_object(self.session, models.Player, player,
+                                                            account_id=player.account_id)
+        self.assertIn(player, self.session.query(models.Player))
+
     def test_add_match(self):
         riot_match_id = "55555555555"
         match_object = persister.get_or_create(self.session, models.Match, defaults=dict(), riot_match_id=riot_match_id)
@@ -34,5 +44,3 @@ class TestRowCreation(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
-
