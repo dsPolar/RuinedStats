@@ -15,7 +15,7 @@ def get_or_create_with_object(session, model, sql_object, **kwargs):
             session.commit()
         except Exception:
             session.rollback()
-            instance = session.query(model).filter_by(**kwargs).one(
+            instance = session.query(model).filter_by(**kwargs).one()
             return instance, False
         else:
             return sql_object, True

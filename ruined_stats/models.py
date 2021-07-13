@@ -51,7 +51,7 @@ class TeamStats(Base):
 
     win = Column(Boolean)
 
-    team_id = Column(Enum(TeamID))
+    team_id = Column(String)
 
 
 class Match(Base):

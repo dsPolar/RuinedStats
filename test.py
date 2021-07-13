@@ -11,7 +11,7 @@ class TestRowCreation(unittest.TestCase):
                   "puuid": "lKTUv_R_ocQqnGOj87fV4XKJjpUjfn0A54CETr-bkFjEUVKuVSOJaX6dPoIrMNEd5Ku3NmmShuQsKQ"}
 
         player_object = persister.get_or_create_player(self.session, player)
-        self.assertIn(player_object, self.session.query(models.Player))
+        self.assertTrue(self.session.query(models.Player).filter_by(account_id=player["accountId"]).first() is not None)
 
     def test_add_player_object(self):
         player = models.Player(summoner_id="jiE6NGM_ddgkCi93q2gzhxT6X5ZooJkpN97TmQ7jLkERboQ",
@@ -21,12 +21,12 @@ class TestRowCreation(unittest.TestCase):
 
         player_object = persister.get_or_create_with_object(self.session, models.Player, player,
                                                             account_id=player.account_id)
-        self.assertIn(player, self.session.query(models.Player))
+        self.assertTrue(self.session.query(models.Player).filter_by(account_id=player.account_id).first() is not None)
 
     def test_add_match(self):
         riot_match_id = "55555555555"
         match_object = persister.get_or_create(self.session, models.Match, defaults=dict(), riot_match_id=riot_match_id)
-        self.assertIn(match_object, self.session.query(models.Match))
+        self.assertTrue(self.session.query(models.Match).filter_by(riot_match_id=riot_match_id).first() is not None)
 
     def test_add_team_stats(self):
         riot_match_id = "6666666666"
@@ -39,7 +39,7 @@ class TestRowCreation(unittest.TestCase):
             team_id="100"
         ),
                                                     match_id=match_object.match_id)
-        self.assertIn(team_stats_object, self.session.query(models.TeamStats))
+        self.assertTrue(self.session.query(models.TeamStats).filter_by(riot_match_id=riot_match_id, team_id="100").first() is not None)
 
 
 if __name__ == "__main__":
