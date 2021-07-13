@@ -4,6 +4,21 @@ from sqlalchemy.sql import ClauseElement
 
 from ruined_stats import models
 
+def get_or_create_with_object(session, model, sql_object, **kwargs):
+    instance = session.query(model).filter_by(**kwargs).one_or_none()
+    if instance:
+        # Item exists in table already
+        return instance, False
+    else:
+        try:
+            session.add(sql_object)
+            session.commit()
+        except Exception:
+            session.rollback()
+            instance = session.query(model).filter_by(**kwargs).one(
+            return instance, False
+        else:
+            return sql_object, True
 
 def get_or_create(session, model, defaults=None, **kwargs):
     instance = session.query(model).filter_by(**kwargs).one_or_none()
