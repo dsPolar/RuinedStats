@@ -8,10 +8,7 @@ from ruined_stats.models import Session, get_unscraped_player
 
 
 #summoner_name = sys.argv[1]
-try:
-    scrape_count = int(sys.argv[1])
-except IndexError:
-    scrape_count = 1
+
 
 
 def get_player_by_summoner_name(summoner_name):
@@ -95,7 +92,13 @@ def scraping_procedure(number_of_users_to_scrape):
                 raise RuntimeError("No unscraped players in database after bootstrap scraped")
 
 
-try:
-    scraping_procedure(scrape_count)
-except RuntimeError as err:
-    print(err)
+if __name__ == "__main__":
+    try:
+        scrape_count = int(sys.argv[1])
+    except IndexError:
+        scrape_count = 1
+
+    try:
+        scraping_procedure(scrape_count)
+    except RuntimeError as err:
+        print(err)

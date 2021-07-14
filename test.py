@@ -1,3 +1,5 @@
+from typing import Any, Tuple
+
 from ruined_stats import models, persister, cli
 import unittest
 
@@ -38,8 +40,8 @@ class TestRowCreation(unittest.TestCase):
             win=True,
             team_id="100"
         ),
-                                                    match_id=match_object.match_id)
-        self.assertTrue(self.session.query(models.TeamStats).filter_by(riot_match_id=riot_match_id, team_id="100").first() is not None)
+                                                    match_id=match_object[0].match_id)
+        self.assertTrue(self.session.query(models.TeamStats).filter_by(match_id=match_object[0].match_id, team_id="100").first() is not None)
 
 
 if __name__ == "__main__":
