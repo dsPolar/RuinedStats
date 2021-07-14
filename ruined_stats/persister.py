@@ -1,4 +1,5 @@
 import sys
+from typing import Any, Tuple
 
 from sqlalchemy.sql import ClauseElement
 
@@ -44,8 +45,7 @@ def create_match(session, riot_match_id, teams, participants, participant_identi
     # Skip process if it does
     match_check = session.query(models.Match).filter_by(riot_match_id=riot_match_id).one_or_none()
     if not match_check:
-        match = get_or_create(session, models.Match, defaults=dict(), riot_match_id=riot_match_id)
-        print("Created Match with id " + str(match.match_id))
+        match: Tuple[Any, bool] = get_or_create(session, models.Match, defaults=dict(), riot_match_id=riot_match_id)
         # Now need to get team stats info
         team_stats_objects = [dict()]
 
@@ -82,9 +82,11 @@ def create_match(session, riot_match_id, teams, participants, participant_identi
             # Keep objects to have id to link to
             player_objects[i]["object"] = get_or_create_player(session,
                                                                participant_identities[i]["player"])
+
             player_objects[i]["team_participant_id"] = participant_identities[i]["participantId"]
             player_objects[i]["team_id"] = \
                 next(item for item in participants if item["participantId"] == player_objects[i]["team_participant_id"])["teamId"]
+
             # Find the list element with id we want, and get the champion_id from that
             player_objects[i]["champion_id"] = \
                 next(item for item in participants if item["participantId"] == player_objects[i]["team_participant_id"])["championId"]
@@ -93,10 +95,9 @@ def create_match(session, riot_match_id, teams, participants, participant_identi
                 team_participant_id=player_objects[i]["team_participant_id"],
                 champion_id=player_objects[i]["champion_id"]
             ),
-                player_id=player_objects[i]["object"].player_id,
-                team_stats_id=(item for item in team_stats_objects if item["team_id"] == player_objects[i]["team_id"])["object"].team_stats_id
+                player_id=player_objects[i]["object"][0].player_id,
+                team_stats_id=next(item for item in team_stats_objects if item["team_id"] == player_objects[i]["team_id"])["object"][0].team_stats_id
             )
-            print("Created participant object")
 
 def get_or_create_player(session, player):
     player_object = get_or_create(session, models.Player, defaults=dict(

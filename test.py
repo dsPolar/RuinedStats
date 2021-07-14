@@ -32,7 +32,7 @@ class TestRowCreation(unittest.TestCase):
 
     def test_add_team_stats(self):
         riot_match_id = "6666666666"
-        match_object = persister.get_or_create(self.session, models.Match, defaults=dict(), riot_match_id=riot_match_id)
+        match_object: Tuple[Any, bool] = persister.get_or_create(self.session, models.Match, defaults=dict(), riot_match_id=riot_match_id)
         team_stats_object = persister.get_or_create(self.session, models.TeamStats, defaults=dict(
             first_blood=True,
             first_tower=True,
