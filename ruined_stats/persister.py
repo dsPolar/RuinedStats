@@ -1,6 +1,7 @@
 import sys
 from typing import Any, Tuple
 
+from riotwatcher import ApiError
 from sqlalchemy.sql import ClauseElement
 
 from ruined_stats import models, cli
@@ -84,8 +85,24 @@ def create_match(session, riot_match_id, teams, participants, participant_identi
 
             # Player format within match participant identities is non ideal as it doesn't have puuid
             # So instead call summoner api by the account id to get better data
-            player_objects[i]["object"] = get_or_create_player(session,
-                                                               cli.get_player_by_account_id(participant_identities[i]["player"]["accountId"]))
+
+            # However seemingly the call by account id can fail, maybe changed region? or summoner name?
+            # So try account first, then name, then just create with empty puuid and mark as scraped so
+            # we never touch it
+            temp_player = None
+            try:
+                temp_player = cli.get_player_by_account_id(participant_identities[i]["player"]["accountId"])
+            except ApiError as err:
+                if err.response.status_code == 404:
+                    try:
+                        temp_player = cli.get_player_by_summoner_name(participant_identities[i]["player"]["summonerName"])
+                    except ApiError as err2:
+                        if err.response.status_code == 404:
+                            temp_player = None
+            if temp_player is not None:
+                player_objects[i]["object"] = get_or_create_player(session, temp_player)
+            else:
+                player_objects[i]["object"] = get_or_create_null_player(session, participant_identities[i]["player"])
 
             player_objects[i]["team_participant_id"] = participant_identities[i]["participantId"]
             player_objects[i]["team_id"] = \
@@ -109,6 +126,15 @@ def get_or_create_player(session, player):
     ), summoner_id=player["id"],
        puuid=player["puuid"])
     print("Created player object for account id " + str(player_object[0].account_id))
+    return player_object
+
+def get_or_create_null_player(session, player_from_match):
+    player_object = get_or_create(session, models.Player, defaults=dict(
+        account_id=player_from_match["accountId"]
+    ),
+                                  summoner_id=player_from_match["summonerId"],
+                                  puuid="",
+                                  scraped=True)
     return player_object
 
 def update_player_scraped(session, sql_player, new_scraped):
