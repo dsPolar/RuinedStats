@@ -49,7 +49,9 @@ def create_match(session, riot_match_id, teams, participants, participant_identi
         match: Tuple[Any, bool] = get_or_create(session, models.Match, defaults=dict(), riot_match_id=riot_match_id)
         print("Added match with internal id " + str(match[0].match_id) + " and rito id " + str(riot_match_id))
         # Now need to get team stats info
-        team_stats_objects = [dict(), dict()]
+        team_stats_objects = []
+        for i in range(len(teams)):
+            team_stats_objects.append(dict())
 
         def map_win_to_bool(win_string):
             if win_string == "Win":
@@ -76,7 +78,9 @@ def create_match(session, riot_match_id, teams, participants, participant_identi
             print("Created TeamStats object with internal id " + str(team_stats_objects[i]["object"][0].team_stats_id))
 
         # Now need to get the player information
-        player_objects = [dict(), dict(), dict(), dict(), dict()]
+        player_objects = []
+        for i in range(len(participant_identities)):
+            player_objects.append(dict())
         assert len(participants) == len(participant_identities)
 
         for i in range(len(participant_identities)):

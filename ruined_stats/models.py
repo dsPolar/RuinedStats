@@ -64,7 +64,7 @@ class Match(Base):
 
 def get_unscraped_player():
     session = Session()
-    sql_player = session.query(Player).filter(Player.scraped == False).one_or_none()
+    sql_player = session.query(Player).filter(Player.scraped == False).first()
 
     if sql_player:
         return sql_player
