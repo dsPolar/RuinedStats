@@ -1,4 +1,5 @@
 import sys
+from typing import Optional, Any
 
 from riotwatcher import LolWatcher, ApiError
 
@@ -72,11 +73,8 @@ def get_and_save_matchlist_by_account_id(sql_player, account_id):
 
 
 def scrape_player(sql_player):
-    try:
-        get_and_save_matchlist_by_account_id(sql_player, sql_player.account_id)
-    except Exception as e:
-        print(e)
-
+    print("Scraping " + str(sql_player.account_id))
+    get_and_save_matchlist_by_account_id(sql_player, sql_player.account_id)
 
 def scraping_procedure(number_of_users_to_scrape):
     for i in range(number_of_users_to_scrape):

@@ -64,12 +64,12 @@ class Match(Base):
 
 def get_unscraped_player():
     session = Session()
-    try:
-        sql_player = session.query(Player).filter(Player.scraped == False).one()
-    except NoResultFound as e:
-        sql_player = None
-        print(e)
-    return sql_player
+    sql_player = session.query(Player).filter(Player.scraped == False).one_or_none()
+
+    if sql_player:
+        return sql_player
+    else:
+        return None
 
 def get_testing_database_session():
     test_engine = create_engine('sqlite:///test_stats.db')

@@ -46,6 +46,7 @@ def create_match(session, riot_match_id, teams, participants, participant_identi
     match_check = session.query(models.Match).filter_by(riot_match_id=riot_match_id).one_or_none()
     if not match_check:
         match: Tuple[Any, bool] = get_or_create(session, models.Match, defaults=dict(), riot_match_id=riot_match_id)
+        print("Added match with internal id " + str(match[0].match_id) + " and rito id " + str(riot_match_id))
         # Now need to get team stats info
         team_stats_objects = [dict()]
 
@@ -67,11 +68,11 @@ def create_match(session, riot_match_id, teams, participants, participant_identi
                 first_blood=team_stats_objects[i]["first_blood"],
                 first_tower=team_stats_objects[i]["first_tower"],
                 first_inhib=team_stats_objects[i]["first_inhib"],
-                win=team_stats_objects[i]
+                win=team_stats_objects[i]["win"]
             ),
                 match_id=match[0].match_id,
                 team_id=team_stats_objects[i]["team_id"])
-            print("Created TeamStats object")
+            print("Created TeamStats object with internal id " + str(team_stats_objects[i]["object"][0].team_stats_id))
 
         # Now need to get the player information
         player_objects = [dict()]
@@ -104,6 +105,7 @@ def get_or_create_player(session, player):
         account_id=player["accountId"]
     ), summoner_id=player["id"],
        puuid=player["puuid"])
+    print("Created player object for account id " + str(player_object[0].account_id))
     return player_object
 
 def update_player_scraped(session, sql_player, new_scraped):
