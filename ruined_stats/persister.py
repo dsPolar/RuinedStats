@@ -106,7 +106,6 @@ def get_or_create_player(session, player):
        puuid=player["puuid"])
     return player_object
 
-def update_player_scraped(sql_player, new_scraped):
-    session = Session()
+def update_player_scraped(session, sql_player, new_scraped):
     sql_player.scraped = new_scraped
     session.commit()

@@ -55,6 +55,7 @@ def save_matchlist(matchlist):
 
 def get_and_save_matchlist_by_account_id(sql_player, account_id):
     lol_watcher = LolWatcher(config.key)
+    session = Session()
     # Work out some solution to get id's for all games
     begin_index = 0
     done = False
@@ -67,7 +68,7 @@ def get_and_save_matchlist_by_account_id(sql_player, account_id):
             done = True
         save_matchlist(matchlist_response["matches"])
     if done:
-        persister.update_player_scraped(sql_player, True)
+        persister.update_player_scraped(session, sql_player, True)
 
 
 def scrape_player(sql_player):
