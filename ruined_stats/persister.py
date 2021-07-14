@@ -3,7 +3,7 @@ from typing import Any, Tuple
 
 from sqlalchemy.sql import ClauseElement
 
-from ruined_stats import models
+from ruined_stats import models, cli
 
 def get_or_create_with_object(session, model, sql_object, **kwargs):
     instance = session.query(model).filter_by(**kwargs).one_or_none()
@@ -48,7 +48,7 @@ def create_match(session, riot_match_id, teams, participants, participant_identi
         match: Tuple[Any, bool] = get_or_create(session, models.Match, defaults=dict(), riot_match_id=riot_match_id)
         print("Added match with internal id " + str(match[0].match_id) + " and rito id " + str(riot_match_id))
         # Now need to get team stats info
-        team_stats_objects = [dict()]
+        team_stats_objects = [dict(), dict()]
 
         def map_win_to_bool(win_string):
             if win_string == "Win":
@@ -75,14 +75,17 @@ def create_match(session, riot_match_id, teams, participants, participant_identi
             print("Created TeamStats object with internal id " + str(team_stats_objects[i]["object"][0].team_stats_id))
 
         # Now need to get the player information
-        player_objects = [dict()]
+        player_objects = [dict(), dict(), dict(), dict(), dict()]
         assert len(participants) == len(participant_identities)
 
         for i in range(len(participant_identities)):
             # Check summonerId against database and get or create object
             # Keep objects to have id to link to
+
+            # Player format within match participant identities is non ideal as it doesn't have puuid
+            # So instead call summoner api by the account id to get better data
             player_objects[i]["object"] = get_or_create_player(session,
-                                                               participant_identities[i]["player"])
+                                                               cli.get_player_by_account_id(participant_identities[i]["player"]["accountId"]))
 
             player_objects[i]["team_participant_id"] = participant_identities[i]["participantId"]
             player_objects[i]["team_id"] = \

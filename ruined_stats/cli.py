@@ -8,16 +8,16 @@ from ruined_stats import persister
 from ruined_stats.models import Session, get_unscraped_player
 
 
-#summoner_name = sys.argv[1]
-
-
-
 def get_player_by_summoner_name(summoner_name):
     lol_watcher = LolWatcher(config.key)
 
     user = lol_watcher.summoner.by_name(config.region, summoner_name)
     return user
 
+def get_player_by_account_id(account_id):
+    lol_watcher = LolWatcher(config.key)
+    user = lol_watcher.summoner.by_account(config.region, account_id)
+    return user
 
 def save_player_by_summoner_name(summoner_name):
     session = Session()
