@@ -93,6 +93,14 @@ def scraping_procedure(number_of_users_to_scrape):
             else:
                 raise RuntimeError("No unscraped players in database after bootstrap scraped")
 
+def single_scrape():
+    sql_player = get_unscraped_player()
+    if sql_player is not None:
+        scrape_player(sql_player)
+        persister.update_player_scraped(Session(), sql_player, True)
+    else:
+        raise RuntimeError("No unscraped players in database")
+
 
 if __name__ == "__main__":
     try:
@@ -101,6 +109,7 @@ if __name__ == "__main__":
         scrape_count = 1
 
     try:
-        scraping_procedure(scrape_count)
+        #scraping_procedure(1)
+        single_scrape()
     except RuntimeError as err:
         print(err)
