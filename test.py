@@ -43,6 +43,17 @@ class TestRowCreation(unittest.TestCase):
                                                     match_id=match_object[0].match_id)
         self.assertTrue(self.session.query(models.TeamStats).filter_by(match_id=match_object[0].match_id, team_id="100").first() is not None)
 
+    def test_set_player_scraped(self):
+        player = models.Player(summoner_id="jiE6NGM_ddgkCi93q2gzhxT6X5ZooJkpN97TmQ7jLkERboQa",
+                               account_id="Y8ahNI3O8mMC_LNYrYykVUG_qbZHm0P18Q5Nq6Nzuv2giAa",
+                               puuid="lKTUv_R_ocQqnGOj87fV4XKJjpUjfn0A54CETr-bkFjEUVKuVSOJaX6dPoIrMNEd5Ku3NmmShuQsKQa",
+                               scraped=False)
+
+        player_object = persister.get_or_create_with_object(self.session, models.Player, player,
+                                                            account_id=player.account_id)
+        persister.update_player_scraped(self.session, player_object[0], True)
+        self.assertTrue(self.session.query(models.Player).filter_by(account_id=player.account_id).first().scraped)
+
 
 if __name__ == "__main__":
     unittest.main()
