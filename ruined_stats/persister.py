@@ -129,28 +129,26 @@ def create_match(session, riot_match_id, teams, participants, participant_identi
 
 def get_or_create_player(session, player):
     player_object = get_or_create(session, models.Player, defaults=dict(
-        account_id=player["accountId"]
-    ), summoner_id=player["id"],
-       puuid=player["puuid"])
+        summoner_id=player["id"],
+        puuid=player["puuid"]
+    ), account_id=player["accountId"])
     print("Created player object for account id " + str(player_object[0].account_id))
     return player_object
 
 def get_or_create_player_from_match_participant(session, player):
     player_object = get_or_create(session, models.Player, defaults=dict(
-        account_id=player["accountId"]
-    ),
-                                  summoner_id=player["summonerId"],
-                                  puuid="")
+        summoner_id=player["summonerId"],
+        puuid=player["accountId"] + "NULLPUUID"
+    ), account_id=player["accountId"])
     print("Created player object for account id " + str(player_object[0].account_id))
     return player_object
 
 def get_or_create_null_player(session, player_from_match):
     player_object = get_or_create(session, models.Player, defaults=dict(
-        account_id=player_from_match["accountId"]
-    ),
-                                  summoner_id=player_from_match["summonerId"],
-                                  puuid="",
-                                  scraped=True)
+        summoner_id=player_from_match["summonerId"],
+        puuid=player_from_match["accountId"] + "NULLPUUID",
+        scraped=True
+    ), account_id=player_from_match["accountId"])
     print("Created null player object for account id " + str(player_object[0].account_id))
     return player_object
 

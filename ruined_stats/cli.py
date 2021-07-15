@@ -68,6 +68,7 @@ def get_and_save_matchlist_by_account_id(sql_player, account_id):
         if len(matchlist_response["matches"]) < 100:
             done = True
         save_matchlist(matchlist_response["matches"])
+        begin_index += 100
     if done:
         persister.update_player_scraped(session, sql_player, True)
 
