@@ -19,7 +19,7 @@ class Player(Base):
 
     player_id = Column(Integer, primary_key=True)
 
-    summoner_id = Column(String, unique=True)
+    summoner_id = Column(String)
     account_id = Column(String, unique=True)
     puuid = Column(String, unique=True)
     scraped = Column(Boolean, default=False)
