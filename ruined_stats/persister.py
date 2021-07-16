@@ -155,3 +155,4 @@ def get_or_create_null_player(session, player_from_match):
 def update_player_scraped(session, sql_player, new_scraped):
     sql_player.scraped = new_scraped
     session.commit()
+    assert sql_player.scraped == new_scraped

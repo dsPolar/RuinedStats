@@ -98,8 +98,19 @@ def single_scrape():
     if sql_player is not None:
         scrape_player(sql_player)
         persister.update_player_scraped(Session(), sql_player, True)
+        if sql_player.scraped:
+            print("Successfully set player scraped to true")
+        else:
+            print("sql_player scraped not true despite it being meant to be")
+
+        if get_unscraped_player().account_id == sql_player.account_id:
+            print("Next unscraped player is the just finished player")
     else:
         raise RuntimeError("No unscraped players in database")
+
+def multi_scrape(scrape_iterations):
+    for i in range(scrape_iterations):
+        single_scrape()
 
 
 if __name__ == "__main__":
@@ -109,7 +120,6 @@ if __name__ == "__main__":
         scrape_count = 1
 
     try:
-        #scraping_procedure(1)
-        single_scrape()
+        multi_scrape(1)
     except RuntimeError as err:
         print(err)
