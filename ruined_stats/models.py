@@ -73,7 +73,7 @@ def get_unscraped_player():
 
 def get_unscraped_player_not_listed(blacklist):
     session = Session()
-    sql_player = session.query(Player.filter(Player.scraped == False, ~Player.account_id.in_((item.account_id for item in blacklist)))).first()
+    sql_player = session.query(Player).filter(Player.scraped == False, ~Player.account_id.in_((item.account_id for item in blacklist))).first()
     return sql_player
 
 

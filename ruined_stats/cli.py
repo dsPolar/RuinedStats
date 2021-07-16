@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
     try:
         session = Session()
-        multi_scrape(session, 1)
+        multi_scrape(session, 2)
         session.close()
     except RuntimeError as err:
         print(err)
