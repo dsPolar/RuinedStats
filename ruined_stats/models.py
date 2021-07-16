@@ -71,6 +71,12 @@ def get_unscraped_player():
     else:
         return None
 
+def get_unscraped_player_not_listed(blacklist):
+    session = Session()
+    sql_player = session.query(Player.filter(Player.scraped == False, ~Player.account_id.in_((item.account_id for item in blacklist)))).first()
+    return sql_player
+
+
 def get_testing_database_session():
     test_engine = create_engine('sqlite:///test_stats.db')
     Base.metadata.create_all(test_engine)

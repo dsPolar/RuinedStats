@@ -54,6 +54,15 @@ class TestRowCreation(unittest.TestCase):
         persister.update_player_scraped(self.session, player_object[0], True)
         self.assertTrue(self.session.query(models.Player).filter_by(account_id=player.account_id).first().scraped)
 
+    def test_set_player_scraped_get_unscraped(self):
+        player = models.Player(summoner_id="jiE6NGM_ddgkCi93q2gzhxT6X5ZooJkpN97TmQ7jLkERboQab",
+                               account_id="Y8ahNI3O8mMC_LNYrYykVUG_qbZHm0P18Q5Nq6Nzuv2giAab",
+                               puuid="lKTUv_R_ocQqnGOj87fV4XKJjpUjfn0A54CETr-bkFjEUVKuVSOJaX6dPoIrMNEd5Ku3NmmShuQsKQab",
+                               scraped=False)
+        new_player = models.get_unscraped_player()
+        persister.update_player_scraped(self.session, new_player, True)
+        self.assertFalse(new_player.account_id != models.get_unscraped_player().account_id)
 
+        
 if __name__ == "__main__":
     unittest.main()

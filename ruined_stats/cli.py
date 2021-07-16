@@ -5,7 +5,7 @@ from riotwatcher import LolWatcher, ApiError
 
 from ruined_stats import config
 from ruined_stats import persister
-from ruined_stats.models import Session, get_unscraped_player
+from ruined_stats.models import Session, get_unscraped_player, get_unscraped_player_not_listed
 
 
 def get_player_by_summoner_name(summoner_name):
@@ -43,20 +43,19 @@ def get_match_info_by_id(match_id):
     return match_id, teams, participants, participant_identities
 
 
-def save_match_info_by_id(match_id):
-    session = Session()
+def save_match_info_by_id(session, match_id):
     match, teams, participants, participant_identities = get_match_info_by_id(match_id)
     persister.create_match(session, match, teams, participants, participant_identities)
 
 
-def save_matchlist(matchlist):
+def save_matchlist(session, matchlist):
     for match in matchlist:
-        save_match_info_by_id(match["gameId"])
+        save_match_info_by_id(session, match["gameId"])
 
 
-def get_and_save_matchlist_by_account_id(sql_player, account_id):
+def get_and_save_matchlist_by_account_id(session, sql_player, account_id):
     lol_watcher = LolWatcher(config.key)
-    session = Session()
+
     # Work out some solution to get id's for all games
     begin_index = 0
     done = False
@@ -70,34 +69,21 @@ def get_and_save_matchlist_by_account_id(sql_player, account_id):
             print("Updating scraped to true")
             persister.update_player_scraped(session, sql_player, True)
             done = True
-        save_matchlist(matchlist_response["matches"])
+        save_matchlist(session, matchlist_response["matches"])
         begin_index += 100
     return
 
 
-def scrape_player(sql_player):
+def scrape_player(session, sql_player):
     print("Scraping " + str(sql_player.account_id))
-    get_and_save_matchlist_by_account_id(sql_player, sql_player.account_id)
+    get_and_save_matchlist_by_account_id(session, sql_player, sql_player.account_id)
 
-def scraping_procedure(number_of_users_to_scrape):
-    for i in range(number_of_users_to_scrape):
-        sql_player = get_unscraped_player()
-        if sql_player is not None:
-            scrape_player(sql_player)
-        else:
-            if i == 0:
-                session = Session()
-                summoner = get_player_by_summoner_name(config.bootstrap_summoner_name)
-                sql_player = persister.get_or_create_player(session, summoner)
-                scrape_player(sql_player)
-            else:
-                raise RuntimeError("No unscraped players in database after bootstrap scraped")
 
-def single_scrape():
-    sql_player = get_unscraped_player()
+def single_scrape(session, blacklist):
+    sql_player = get_unscraped_player_not_listed(blacklist)
     if sql_player is not None:
-        scrape_player(sql_player)
-        persister.update_player_scraped(Session(), sql_player, True)
+        scrape_player(session, sql_player)
+        persister.update_player_scraped(session, sql_player, True)
         if sql_player.scraped:
             print("Successfully set player scraped to true")
         else:
@@ -107,10 +93,12 @@ def single_scrape():
             print("Next unscraped player is the just finished player")
     else:
         raise RuntimeError("No unscraped players in database")
+    return sql_player
 
-def multi_scrape(scrape_iterations):
+def multi_scrape(session, scrape_iterations):
+    scraped_this_run = []
     for i in range(scrape_iterations):
-        single_scrape()
+        scraped_this_run.append(single_scrape(session, scraped_this_run))
 
 
 if __name__ == "__main__":
@@ -120,6 +108,8 @@ if __name__ == "__main__":
         scrape_count = 1
 
     try:
-        multi_scrape(1)
+        session = Session()
+        multi_scrape(session, 1)
+        session.close()
     except RuntimeError as err:
         print(err)
