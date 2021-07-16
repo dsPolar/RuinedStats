@@ -82,7 +82,12 @@ def scrape_player(session, sql_player):
 def single_scrape(session, blacklist):
     sql_player = get_unscraped_player_not_listed(blacklist)
     if sql_player is not None:
-        scrape_player(session, sql_player)
+        try:
+            scrape_player(session, sql_player)
+        except ApiError as err:
+            print("bad account id")
+            print(err)
+
         persister.update_player_scraped(session, sql_player, True)
         if sql_player.scraped:
             print("Successfully set player scraped to true")
