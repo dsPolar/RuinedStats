@@ -67,7 +67,6 @@ def get_and_save_matchlist_by_account_id(session, sql_player, account_id):
         print(str(len(matchlist_response["matches"])))
         if len(matchlist_response["matches"]) < 100:
             print("Updating scraped to true")
-            persister.update_player_scraped_search(session, sql_player, 1)
             done = True
         save_matchlist(session, matchlist_response["matches"])
         begin_index += 100
@@ -87,15 +86,6 @@ def single_scrape(session, blacklist):
         except ApiError as err:
             print("bad account id")
             print(err)
-
-        persister.update_player_scraped_search(session, sql_player, 1)
-        if sql_player.scraped:
-            print("Successfully set player scraped to true")
-        else:
-            print("sql_player scraped not true despite it being meant to be")
-
-        if get_unscraped_player().account_id == sql_player.account_id:
-            print("Next unscraped player is the just finished player")
     else:
         raise RuntimeError("No unscraped players in database")
     return sql_player
