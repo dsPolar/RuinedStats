@@ -1,11 +1,10 @@
 import sys
-from typing import Optional, Any
 
 from riotwatcher import LolWatcher, ApiError
 
 from ruined_stats import config
 from ruined_stats import persister
-from ruined_stats.models import Session, get_unscraped_player, get_unscraped_player_not_listed
+from ruined_stats.models import Session, get_unscraped_player_not_listed
 
 
 def get_player_by_summoner_name(summoner_name):
@@ -34,13 +33,14 @@ def get_match_info_by_id(match_id):
             teams = match_info["teams"]
             participants = match_info["participants"]
             participant_identities = match_info["participantIdentities"]
+            return match_id, teams, participants, participant_identities
         except ApiError as err:
             if attempt < (config.number_of_retries - 1):
                 print(err)
                 print("ApiError within retry count. Retrying...")
             else:
                 raise
-    return match_id, teams, participants, participant_identities
+    return None, None, None, None
 
 
 def save_match_info_by_id(session, match_id):
@@ -53,7 +53,7 @@ def save_matchlist(session, matchlist):
         save_match_info_by_id(session, match["gameId"])
 
 
-def get_and_save_matchlist_by_account_id(session, sql_player, account_id):
+def get_and_save_matchlist_by_account_id(session, account_id):
     lol_watcher = LolWatcher(config.key)
 
     # Work out some solution to get id's for all games
@@ -75,7 +75,7 @@ def get_and_save_matchlist_by_account_id(session, sql_player, account_id):
 
 def scrape_player(session, sql_player):
     print("Scraping " + str(sql_player.account_id))
-    get_and_save_matchlist_by_account_id(session, sql_player, sql_player.account_id)
+    get_and_save_matchlist_by_account_id(session, sql_player.account_id)
 
 
 def single_scrape(session, blacklist):
