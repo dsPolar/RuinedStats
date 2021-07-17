@@ -67,7 +67,7 @@ def get_and_save_matchlist_by_account_id(session, sql_player, account_id):
         print(str(len(matchlist_response["matches"])))
         if len(matchlist_response["matches"]) < 100:
             print("Updating scraped to true")
-            persister.update_player_scraped(session, sql_player, True)
+            persister.update_player_scraped_search(session, sql_player, 1)
             done = True
         save_matchlist(session, matchlist_response["matches"])
         begin_index += 100
@@ -88,7 +88,7 @@ def single_scrape(session, blacklist):
             print("bad account id")
             print(err)
 
-        persister.update_player_scraped(session, sql_player, True)
+        persister.update_player_scraped_search(session, sql_player, 1)
         if sql_player.scraped:
             print("Successfully set player scraped to true")
         else:
@@ -104,6 +104,7 @@ def multi_scrape(session, scrape_iterations):
     scraped_this_run = []
     for i in range(scrape_iterations):
         scraped_this_run.append(single_scrape(session, scraped_this_run))
+    persister.update_player_scraped_list(session, scraped_this_run, True)
 
 
 if __name__ == "__main__":
@@ -114,7 +115,7 @@ if __name__ == "__main__":
 
     try:
         session = Session()
-        multi_scrape(session, 2)
+        multi_scrape(session, 5)
         session.close()
     except RuntimeError as err:
         print(err)

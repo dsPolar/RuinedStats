@@ -59,10 +59,33 @@ class TestRowCreation(unittest.TestCase):
                                account_id="Y8ahNI3O8mMC_LNYrYykVUG_qbZHm0P18Q5Nq6Nzuv2giAab",
                                puuid="lKTUv_R_ocQqnGOj87fV4XKJjpUjfn0A54CETr-bkFjEUVKuVSOJaX6dPoIrMNEd5Ku3NmmShuQsKQab",
                                scraped=False)
+        player_object = persister.get_or_create_with_object(self.session, models.Player, player,
+                                                            account_id=player.account_id)[0]
         new_player = models.get_unscraped_player()
-        persister.update_player_scraped(self.session, new_player, True)
-        self.assertFalse(new_player.account_id != models.get_unscraped_player().account_id)
+        persister.update_player_scraped_search(self.session, new_player, 1)
+        self.assertTrue(new_player.account_id != models.get_unscraped_player().account_id)
 
-        
+    def test_set_player_scraped_manually(self):
+        player = models.Player(summoner_id="jiE6NGM_ddgkCi93q2gzhxT6X5ZooJkpN97TmQ7jLkERboQabc",
+                               account_id="Y8ahNI3O8mMC_LNYrYykVUG_qbZHm0P18Q5Nq6Nzuv2giAabc",
+                               puuid="lKTUv_R_ocQqnGOj87fV4XKJjpUjfn0A54CETr-bkFjEUVKuVSOJaX6dPoIrMNEd5Ku3NmmShuQsKQabc",
+                               scraped=False)
+        player_object = persister.get_or_create_with_object(self.session, models.Player, player,
+                                                            account_id=player.account_id)[0]
+        self.session.query(models.Player).filter_by(account_id=player_object.account_id).update({"scraped": True})
+        self.session.commit()
+        self.assertTrue(self.session.query(models.Player).filter_by(account_id=player_object.account_id).first().scraped)
+
+    def test_set_player_scraped_search(self):
+        player = models.Player(summoner_id="testabc",
+                               account_id="testabc",
+                               puuid="testabc",
+                               scraped=False)
+        player_object = persister.get_or_create_with_object(self.session, models.Player, player,
+                                                            account_id=player.account_id)[0]
+        persister.update_player_scraped_search(self.session, player_object, True)
+        self.assertTrue(self.session.query(models.Player).filter_by(account_id=player_object.account_id).first().scraped)
+
+
 if __name__ == "__main__":
     unittest.main()

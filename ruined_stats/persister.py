@@ -156,3 +156,12 @@ def update_player_scraped(session, sql_player, new_scraped):
     sql_player.scraped = new_scraped
     session.commit()
     assert sql_player.scraped == new_scraped
+    # assert models.get_unscraped_player().account_id != sql_player.account_id
+
+def update_player_scraped_search(session, sql_player, new_scraped):
+    session.query(models.Player).filter_by(account_id=sql_player.account_id).update({"scraped": True})
+    session.commit()
+
+def update_player_scraped_list(session, list_of_players, new_scraped):
+    for player in list_of_players:
+        update_player_scraped_search(session, player, new_scraped)
