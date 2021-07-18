@@ -105,7 +105,7 @@ if __name__ == "__main__":
 
     try:
         session = Session()
-        multi_scrape(session, 5)
+        multi_scrape(session, 20)
         session.close()
     except RuntimeError as err:
         print(err)
